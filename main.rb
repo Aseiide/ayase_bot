@@ -76,7 +76,8 @@ def handler(event:, context:)
         token = req['replyToken']
         message = {
           type: 'text',
-          text: mes
+          # ローカル変数xのスコープはここまで及ばない
+          text: x
         }
         client.reply_message(token, message)
       end
