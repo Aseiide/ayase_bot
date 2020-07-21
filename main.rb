@@ -4,8 +4,8 @@ require 'json' #jsonを使うためのライブラリ
 require 'nokogiri'
 require 'open-uri'
 # linebot-sdkを扱うために以下２つを読み込み
-# require 'sinatra
-# require 'line/bot'
+require 'sinatra'
+require 'line/bot'
 
 # userから駅名を受け取る
 # station_name = gets.chomp
@@ -50,6 +50,7 @@ html = URI.open(url) do |f|
   f.read
 end
 
+# スクレイピングして取ってきたテキストをxに格納
 doc = Nokogiri::HTML.parse(html, nil, charset)
 doc.xpath('/html/body/div[1]/div[4]/div/div[1]/div[1]/h1').each do |node|
   x = node.inner_text
@@ -57,6 +58,7 @@ doc.xpath('/html/body/div[1]/div[4]/div/div[1]/div[1]/h1').each do |node|
 end
 
 # line-bot-sdkから引っ張ってきたコード
+# やりたいこと->xをメッセージとして出力する
 
 def handler(event:, context:)
   body = event["body"]
