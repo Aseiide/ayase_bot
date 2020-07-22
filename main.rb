@@ -60,36 +60,41 @@ end
 # line-bot-sdkから引っ張ってきたコード
 # やりたいこと->xをメッセージとして出力する
 
-def handler(event:, context:)
-  body = event["body"]
-  signature = event["headers"]["X-Line-Signature"]
+def client
+  @client ||= Line::Bot::Client.new { |config|
+    config.channel_id = ENV["LINE_CHANNEL_ID"]
+    config.channel_secret = ENV["LINE_CHANNEL_SECRET"]
+    config.channel_token = ENV["LINE_CHANNEL_TOKEN"]
+  }
+end
+
+post '/callback' do
+  body = request.body.read
+
+  signature = request.env['HTTP_X_LINE_SIGNATURE']
   unless client.validate_signature(body, signature)
     error 400 do 'Bad Request' end
   end
-  requests = client.parse_events_from(body)
-    equests.each do |req|
-    case req
+
+  events = client.parse_events_from(body)
+  events.each do |event|
+    case event
     when Line::Bot::Event::Message
-      case req.type
+      case event.type
       when Line::Bot::Event::MessageType::Text
-        mes = req.message['text']
-        token = req['replyToken']
         message = {
           type: 'text',
-          # ローカル変数xのスコープはここまで及ばない
-          text: x
+          text: event.message['text']
         }
-        client.reply_message(token, message)
+        client.reply_message(event['replyToken'], message)
+      when Line::Bot::Event::MessageType::Image, Line::Bot::Event::MessageType::Video
+        response = client.get_message_content(event.message['id'])
+        tf = Tempfile.open("content")
+        tf.write(response.body)
       end
     end
   end
-end
 
-private 
-
-def client
-  @client ||= Line::Bot::Client.new { |config|
-    config.channel_secret = ENV['LINE_CHANNEL_SECRET']
-    config.channel_token = ENV['LINE_CHANNEL_TOKEN']
-  }
+  # Don't forget to return a successful response
+  "OK"
 end
