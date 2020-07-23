@@ -4,8 +4,8 @@ require 'json' #jsonを使うためのライブラリ
 require 'nokogiri'
 require 'open-uri'
 # linebot-sdkを扱うために以下２つを読み込み
-# require 'sinatra
-# require 'line/bot'
+require 'sinatra'
+require 'line/bot'
 
 # userから駅名を受け取る
 # station_name = gets.chomp
@@ -50,43 +50,50 @@ html = URI.open(url) do |f|
   f.read
 end
 
+# スクレイピングして取ってきたテキストをxに格納
 doc = Nokogiri::HTML.parse(html, nil, charset)
 doc.xpath('/html/body/div[1]/div[4]/div/div[1]/div[1]/h1').each do |node|
-  x = node.inner_text
-  puts x
+  $x = node.inner_text
 end
-
+puts $x
 # line-bot-sdkから引っ張ってきたコード
-
-def handler(event:, context:)
-  body = event["body"]
-  signature = event["headers"]["X-Line-Signature"]
-  unless client.validate_signature(body, signature)
-    error 400 do 'Bad Request' end
-  end
-  requests = client.parse_events_from(body)
-    equests.each do |req|
-    case req
-    when Line::Bot::Event::Message
-      case req.type
-      when Line::Bot::Event::MessageType::Text
-        mes = req.message['text']
-        token = req['replyToken']
-        message = {
-          type: 'text',
-          text: mes
-        }
-        client.reply_message(token, message)
-      end
-    end
-  end
-end
-
-private 
+# やりたいこと->xをメッセージとして出力する
 
 def client
   @client ||= Line::Bot::Client.new { |config|
-    config.channel_secret = ENV['LINE_CHANNEL_SECRET']
-    config.channel_token = ENV['LINE_CHANNEL_TOKEN']
+    config.channel_id = ENV["LINE_CHANNEL_ID"]
+    config.channel_secret = ENV["LINE_CHANNEL_SECRET"]
+    config.channel_token = ENV["LINE_CHANNEL_TOKEN"]
   }
+end
+
+post '/callback' do
+  body = request.body.read
+
+  signature = request.env['HTTP_X_LINE_SIGNATURE']
+  unless client.validate_signature(body, signature)
+    error 400 do 'Bad Request' end
+  end
+
+  events = client.parse_events_from(body)
+  events.each do |event|
+    case event
+    when Line::Bot::Event::Message
+      case event.type
+      when Line::Bot::Event::MessageType::Text
+        message = {
+          type: 'text',
+          text: "#{$x}"
+        }
+        client.reply_message(event['replyToken'], message)
+      when Line::Bot::Event::MessageType::Image, Line::Bot::Event::MessageType::Video
+        response = client.get_message_content(event.message['id'])
+        tf = Tempfile.open("content")
+        tf.write(response.body)
+      end
+    end
+  end
+
+  # Don't forget to return a successful response
+  "OK"
 end
