@@ -53,10 +53,9 @@ end
 # スクレイピングして取ってきたテキストをxに格納
 doc = Nokogiri::HTML.parse(html, nil, charset)
 doc.xpath('/html/body/div[1]/div[4]/div/div[1]/div[1]/h1').each do |node|
-  x = node.inner_text
-  puts x
+  $x = node.inner_text
 end
-
+puts $x
 # line-bot-sdkから引っ張ってきたコード
 # やりたいこと->xをメッセージとして出力する
 
@@ -84,7 +83,7 @@ post '/callback' do
       when Line::Bot::Event::MessageType::Text
         message = {
           type: 'text',
-          text: event.message['text']
+          text: "#{$x}"
         }
         client.reply_message(event['replyToken'], message)
       when Line::Bot::Event::MessageType::Image, Line::Bot::Event::MessageType::Video
