@@ -55,7 +55,6 @@ doc = Nokogiri::HTML.parse(html, nil, charset)
 doc.xpath('/html/body/div[1]/div[4]/div/div[1]/div[1]/h1').each do |node|
   $x = node.inner_text
 end
-puts $x
 # line-bot-sdkから引っ張ってきたコード
 # やりたいこと->xをメッセージとして出力する
 
