@@ -6,9 +6,11 @@ require 'open-uri'
 # linebot-sdkを扱うために以下２つを読み込み
 require 'sinatra'
 require 'line/bot'
+require 'dotenv/load'
 
 # userから駅名を受け取る
 # station_name = gets.chomp
+station_name = nil
 station_name = "赤坂"
 # 駅名を駅コードに変換
 station_code = {
@@ -34,12 +36,12 @@ station_code = {
 :北綾瀬 => "22627"
 }
 
-# 到着駅を綾瀬に固定してリクエストを投げる　
-res1 = Net::HTTP.get(URI.parse("http://api.ekispert.jp/v1/json/search/course/light?key=LE_fHM9TSpsph9Cu&from=#{station_code[station_name.to_sym]}&to=22499"))
+# 到着駅を綾瀬に固定してリクエストを投げる
+res1 = nil
+res1 = Net::HTTP.get(URI.parse("http://api.ekispert.jp/v1/json/search/course/light?key=#{ENV['ACCESS_KEY']}&from=#{station_code[station_name.to_sym]}&to=22499"))
 
 #叩いて返ってきたJSONをhashに格納
 hash = JSON.parse(res1)
-
 url = hash["ResultSet"]["ResourceURI"]
 
 #返ってくるresのurlからスクレイピングして必要な部分のhtmlを抜き出して時間を出力
@@ -54,15 +56,16 @@ end
 doc = Nokogiri::HTML.parse(html, nil, charset)
 doc.xpath('/html/body/div[1]/div[4]/div/div[1]/div[1]/h1').each do |node|
   $x = node.inner_text
+  puts $x
 end
 # line-bot-sdkから引っ張ってきたコード
 # やりたいこと->xをメッセージとして出力する
 
 def client
   @client ||= Line::Bot::Client.new { |config|
-    config.channel_id = ENV["LINE_CHANNEL_ID"]
-    config.channel_secret = ENV["LINE_CHANNEL_SECRET"]
-    config.channel_token = ENV["LINE_CHANNEL_TOKEN"]
+    config.channel_id = ENV['LINE_CHANNEL_ID']
+    config.channel_secret = ENV['LINE_CHANNEL_SECRET']
+    config.channel_token = ENV['LINE_CHANNEL_TOKEN']
   }
 end
 
