@@ -82,6 +82,9 @@ post '/callback' do
   events.each do |event|
     case event
     when Line::Bot::Event::Message
+      #ユーザーから送られてくる駅を取得
+      # case event.type
+      # when Line::Bot::Event::MessageType::Text
       case event.type
       when Line::Bot::Event::MessageType::Text
         message = {
