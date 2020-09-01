@@ -8,60 +8,6 @@ require 'sinatra'
 require 'line/bot'
 require 'dotenv/load'
 
-# userから駅名を受け取る
-# station_name = gets.chomp
-station_name = nil
-station_name = "赤坂"
-# 駅名を駅コードに変換
-station_code = {
-:代々木上原 => "23044",
-:代々木公園 => "23045",
-:明治神宮前 => "23016",
-:表参道  => "22588",
-:乃木坂 => "22893",
-:赤坂 => "22485",
-:国会議事堂 => "22668",
-:霞が関 => "22596",
-:日比谷 => "22951",
-:二重橋前 => "22883",
-:大手町 => "22564",
-:新御茶ノ水 => "22732",
-:湯島 => "23038",
-:根津 => "22888",
-:千駄木 => "22782",
-:西日暮里 => "22880",
-:町屋 => "22978",
-:北千住 => "22630",
-:綾瀬 => "22499",
-:北綾瀬 => "22627"
-}
-
-# 到着駅を綾瀬に固定してリクエストを投げる
-res1 = nil
-res1 = Net::HTTP.get(URI.parse("http://api.ekispert.jp/v1/json/search/course/light?key=#{ENV['ACCESS_KEY']}&from=#{station_code[station_name.to_sym]}&to=22499"))
-
-#叩いて返ってきたJSONをhashに格納
-hash = JSON.parse(res1)
-url = hash["ResultSet"]["ResourceURI"]
-
-#返ってくるresのurlからスクレイピングして必要な部分のhtmlを抜き出して時間を出力
-charset = nil
-
-html = URI.open(url) do |f|
-  charset = f.charset
-  f.read
-end
-
-# スクレイピングして取ってきたテキストをxに格納
-doc = Nokogiri::HTML.parse(html, nil, charset)
-doc.xpath('/html/body/div[1]/div[4]/div/div[1]/div[1]/h1').each do |node|
-  $x = node.inner_text
-  puts $x
-end
-
-# line-bot-sdkから引っ張ってきたコード
-# やりたいこと->xをメッセージとして出力する
-
 def client
   @client ||= Line::Bot::Client.new { |config|
     config.channel_id = ENV['LINE_CHANNEL_ID']
@@ -82,24 +28,57 @@ post '/callback' do
   events.each do |event|
     case event
     when Line::Bot::Event::Message
-      #ユーザーから送られてくる駅を取得
-      # case event.type
-      # when Line::Bot::Event::MessageType::Text
       case event.type
       when Line::Bot::Event::MessageType::Text
-        message = {
-          type: 'text',
-          text: "#{$x}"
-        }
-        client.reply_message(event['replyToken'], message)
-      when Line::Bot::Event::MessageType::Image, Line::Bot::Event::MessageType::Video
-        response = client.get_message_content(event.message['id'])
-        tf = Tempfile.open("content")
-        tf.write(response.body)
+        # 駅名を変数で受け取る→その変数をurlに格納→スクレイピング→メッセージとして出力
+        # 駅名を駅コードに変換
+        station_code = {
+          :代々木上原 => "23044",
+          :代々木公園 => "23045",
+          :明治神宮前 => "23016",
+          :表参道  => "22588",
+          :乃木坂 => "22893",
+          :赤坂 => "22485",
+          :国会議事堂 => "22668",
+          :霞が関 => "22596",
+          :日比谷 => "22951",
+          :二重橋前 => "22883",
+          :大手町 => "22564",
+          :新御茶ノ水 => "22732",
+          :湯島 => "23038",
+          :根津 => "22888",
+          :千駄木 => "22782",
+          :西日暮里 => "22880",
+          :町屋 => "22978",
+          :北千住 => "22630",
+          :綾瀬 => "22499",
+          :北綾瀬 => "22627"
+          }
+          @station_name = event.message["text"]
+           # 到着駅を綾瀬に固定してリクエストを投げる
+          res1 = Net::HTTP.get(URI.parse("http://api.ekispert.jp/v1/json/search/course/light?key=#{ENV['ACCESS_KEY']}&from=#{station_code[@station_name.to_sym]}&to=22499"))
+
+          #叩いて返ってきたJSONをhashに格納
+          hash = JSON.parse(res1)
+          url = hash["ResultSet"]["ResourceURI"]
+
+          #返ってくるresのurlからスクレイピングして必要な部分のhtmlを抜き出して時間を出力
+          charset = nil
+          html = URI.open(url) do |f|
+            charset = f.charset
+            f.read
+          end
+          # スクレイピングして取ってきたテキストをxに格納
+          doc = Nokogiri::HTML.parse(html, nil, charset)
+          doc.xpath('/html/body/div[1]/div[4]/div/div[1]/div[1]/h1').each do |node|
+            $time = node.inner_text
+          end
+          message = {type: 'text',text: "#{$time}"}
+          client.reply_message(event['replyToken'], message)
       end
     end
-  end
 
   # Don't forget to return a successful response
   "OK"
+  end
 end
