@@ -69,7 +69,7 @@ post '/callback' do
           end
           # スクレイピングして取ってきたテキストをxに格納
           doc = Nokogiri::HTML.parse(html, nil, charset)
-          doc.xpath('/html/body/div[1]/div[4]/div/div[1]/section[1]/div/table[2]/tr[1]/td[@class='time_cell.icon_txt01']').each do |node|
+          doc.xpath('/html/body/div[1]/div[4]/div/div[1]/section[1]/div/table[2]/tr[1]/td[@class='time_cell']').each do |node|
             $time = node.inner_text
           end
           message = {type: 'text',text: "#{$time}"}
