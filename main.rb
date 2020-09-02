@@ -6,7 +6,6 @@ require 'open-uri'
 # linebot-sdkを扱うために以下２つを読み込み
 require 'sinatra'
 require 'line/bot'
-require 'dotenv/load'
 
 def client
   @client ||= Line::Bot::Client.new { |config|
