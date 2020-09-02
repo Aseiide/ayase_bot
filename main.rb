@@ -72,11 +72,10 @@ post '/callback' do
           doc.xpath('/html/body/div[1]/div[4]/div/div[1]/div[2]/div/table/tr[1]/td[3]/p[1]').each do |node|
             $time = node.inner_text
           end
-          message = {type: 'text',text: "#{$time}"}
+          message = {type: 'text',text: "次の綾瀬行の電車は + #{$time} + です"}
           client.reply_message(event['replyToken'], message)
       end
     end
-
   # Don't forget to return a successful response
   "OK"
   end
