@@ -3,7 +3,6 @@ require 'uri'
 require 'json' #jsonを使うためのライブラリ
 require 'nokogiri'
 require 'open-uri'
-# linebot-sdkを扱うために以下２つを読み込み
 require 'sinatra'
 require 'line/bot'
 
@@ -15,6 +14,31 @@ def client
   }
 end
 
+# 駅名を駅コードに変換
+station_code = {
+  :代々木上原 => "23044",
+  :代々木公園 => "23045",
+  :明治神宮前 => "23016",
+  :表参道  => "22588",
+  :乃木坂 => "22893",
+  :赤坂 => "22485",
+  :国会議事堂 => "22668",
+  :霞が関 => "22596",
+  :日比谷 => "22951",
+  :二重橋前 => "22883",
+  :大手町 => "22564",
+  :新御茶ノ水 => "22732",
+  :湯島 => "23038",
+  :根津 => "22888",
+  :千駄木 => "22782",
+  :西日暮里 => "22880",
+  :町屋 => "22978",
+  :北千住 => "22630",
+  :綾瀬 => "22499",
+  :北綾瀬 => "22627"
+  }
+
+# 毎回実行したい処理だけブロックの中に記述
 post '/callback' do
   body = request.body.read
 
@@ -29,30 +53,6 @@ post '/callback' do
     when Line::Bot::Event::Message
       case event.type
       when Line::Bot::Event::MessageType::Text
-        # 駅名を変数で受け取る→その変数をurlに格納→スクレイピング→メッセージとして出力
-        # 駅名を駅コードに変換
-        station_code = {
-          :代々木上原 => "23044",
-          :代々木公園 => "23045",
-          :明治神宮前 => "23016",
-          :表参道  => "22588",
-          :乃木坂 => "22893",
-          :赤坂 => "22485",
-          :国会議事堂 => "22668",
-          :霞が関 => "22596",
-          :日比谷 => "22951",
-          :二重橋前 => "22883",
-          :大手町 => "22564",
-          :新御茶ノ水 => "22732",
-          :湯島 => "23038",
-          :根津 => "22888",
-          :千駄木 => "22782",
-          :西日暮里 => "22880",
-          :町屋 => "22978",
-          :北千住 => "22630",
-          :綾瀬 => "22499",
-          :北綾瀬 => "22627"
-          }
           @station_name = event.message["text"]
            # 到着駅を綾瀬に固定してリクエストを投げる
           res1 = Net::HTTP.get(URI.parse("http://api.ekispert.jp/v1/json/search/course/light?key=#{ENV['ACCESS_KEY']}&from=#{station_code[@station_name.to_sym]}&to=22499"))
@@ -72,11 +72,10 @@ post '/callback' do
           doc.xpath('/html/body/div[1]/div[4]/div/div[1]/div[2]/div/table/tr[1]/td[3]/p[1]').each do |node|
             $time = node.inner_text
           end
-          message = {type: 'text',text: "#{$time}"}
+          message = {type: 'text',text: "次の綾瀬行の電車は#{$time}です"}
           client.reply_message(event['replyToken'], message)
       end
     end
-
   # Don't forget to return a successful response
   "OK"
   end
