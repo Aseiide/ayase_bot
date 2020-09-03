@@ -79,7 +79,7 @@ post '/callback' do
             client.reply_message(event['replyToken'], message)
           elsif
             message1 = {type: 'text',text: "これは千代田線の駅ではありません。別の駅を入力してください"}
-            client.reply_message(event['replyToken'], message)
+            client.reply_message(event['replyToken'], message1)
           end
       end
     end
