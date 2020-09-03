@@ -86,9 +86,3 @@ post '/callback' do
   "OK"
   end
 end
-
-if station_code.include?(a)
-  puts "これは千代田線内の駅です"
-elsif
-  puts "これは千代田線の駅ではありません。別の駅を入力してください"
-end
