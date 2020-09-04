@@ -75,12 +75,11 @@ post '/callback' do
       end
       if station_code.include?(@station_name_sym)
         message = {type: 'text',text: "次の綾瀬行の電車は#{$time}です"}
+        client.reply_message(event['replyToken'], message)
       else
         message1 = {type: 'text',text: "これは千代田線の駅ではありません。別の駅を入力してください"}
+        client.reply_message(event['replyToken'], message1)
       end
-      client.reply_message(event['replyToken'], message)
-      client.reply_message(event['replyToken'], message1)
-    end
     end
   # Don't forget to return a successful response
   "OK"
