@@ -79,7 +79,7 @@ post '/callback' do
     case event.type
     when Line::Bot::Event::MessageType::Text
       message = {type: 'text',text: response}
-      client.reply_message(event['replyToken'], message
+      client.reply_message(event['replyToken'], message)
     end
     end
   # Don't forget to return a successful response
