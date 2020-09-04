@@ -51,7 +51,7 @@ post '/callback' do
   events.each do |event|
     # userから送られてくるテキストを変数に格納
     @station_name = event.message["text"]
-    @station_name_sym = @station_name.to_sym
+    station_name_sym = @station_name.to_sym
     # 到着駅を綾瀬に固定してリクエストを投げる
     res1 = Net::HTTP.get(URI.parse("http://api.ekispert.jp/v1/json/search/course/light?key=#{ENV['ACCESS_KEY']}&from=#{station_code[@station_name.to_sym]}&to=22499"))
 
@@ -69,7 +69,7 @@ post '/callback' do
     doc.xpath('/html/body/div[1]/div[4]/div/div[1]/div[2]/div/table/tr[1]/td[3]/p[1]').each do |node|
     $time = node.inner_text
     end
-    if station_code.include?(@station_name_sym)
+    if station_code.include?(station_name_sym)
       response = "次の綾瀬行の電車は#{$time}です"
     else
       response = "これは千代田線の駅ではありません。別の駅を入力してください"
