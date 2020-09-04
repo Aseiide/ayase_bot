@@ -81,6 +81,7 @@ post '/callback' do
       client.reply_message(event['replyToken'], message)
       client.reply_message(event['replyToken'], message1)
     end
+    end
   # Don't forget to return a successful response
   "OK"
   end
