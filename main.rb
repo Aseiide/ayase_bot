@@ -81,8 +81,8 @@ post '/callback' do
       message = {type: 'text',text: response}
       client.reply_message(event['replyToken'], message
     end
+    end
   # Don't forget to return a successful response
   "OK"
   end
-end
 end
