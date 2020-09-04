@@ -70,9 +70,9 @@ post '/callback' do
     $time = node.inner_text
     end
     if station_code.include?(@station_name_sym)
-      response = {type: 'text',text: "次の綾瀬行の電車は#{$time}です"}
+      response = "次の綾瀬行の電車は#{$time}です"
     else
-      response = {type: 'text',text: "これは千代田線の駅ではありません。別の駅を入力してください"}
+      response = "これは千代田線の駅ではありません。別の駅を入力してください"
     end
     case event
     when Line::Bot::Event::Message
