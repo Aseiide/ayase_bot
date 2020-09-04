@@ -71,7 +71,8 @@ post '/callback' do
     end
     if station_code.include?(station_name_sym)
       response = "次の綾瀬行の電車は#{$time}です"
-    else
+    end
+    unless station_code.include?(station_name_sym)
       response = "これは千代田線の駅ではありません。別の駅を入力してください"
     end
     case event
