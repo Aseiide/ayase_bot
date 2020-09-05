@@ -1,7 +1,6 @@
-
-require 'net/http' #標準ライブラリの呼び出し
+require 'net/http'
 require 'uri'
-require 'json' #jsonを使うためのライブラリ
+require 'json'
 require 'nokogiri'
 require 'open-uri'
 require 'sinatra'
@@ -86,7 +85,6 @@ post '/callback' do
         end
       end
     end
-  # Don't forget to return a successful response
   "OK"
   end
 end
