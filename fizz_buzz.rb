@@ -6,7 +6,7 @@ def fizz_buzz(args)
   elsif args % 3 == 0
     "fizz"
   elsif args % 5 == 0
-    "buzz"
+    "5で割れるよ"
   else
     args
   end
@@ -22,7 +22,7 @@ describe "#fizz_buzz" do
   end
 
   it "buzzを出力すること" do
-    expect(fizz_5).to eq("buz")
+    expect(fizz_5).to eq("buzz")
   end
 end
 
