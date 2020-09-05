@@ -69,11 +69,7 @@ post '/callback' do
     doc.xpath('/html/body/div[1]/div[4]/div/div[1]/div[2]/div/table/tr[1]/td[3]/p[1]').each do |node|
     $time = node.inner_text
     end
-    unless station_code.include?(station_name_sym)
-      response = "これは千代田線の駅ではありません。別の駅を入力してください"
-    else
-      response = "次の綾瀬行の電車は#{$time}です"
-    end
+    response = "これは千代田線の駅ではありません。別の駅を入力してください"
     case event
     when Line::Bot::Event::Message
     case event.type
