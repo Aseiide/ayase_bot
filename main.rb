@@ -1,6 +1,6 @@
-require 'net/http'
+require 'net/http' #標準ライブラリの呼び出し
 require 'uri'
-require 'json'
+require 'json' #jsonを使うためのライブラリ
 require 'nokogiri'
 require 'open-uri'
 require 'sinatra'
@@ -38,53 +38,67 @@ station_code = {
   :北綾瀬 => "22627"
   }
 
-# 毎回実行したい処理だけブロックの中に記述
-post '/callback' do
-  body = request.body.read
 
+def test
+  body = request.body.read
   signature = request.env['HTTP_X_LINE_SIGNATURE']
   unless client.validate_signature(body, signature)
     error 400 do 'Bad Request' end
   end
-
   events = client.parse_events_from(body)
+end
+
+def test2
   events.each do |event|
+    # userから送られてくるテキストを変数に格納
+    @station_name = event.message["text"]
+    station_name_sym = @station_name.to_sym
+    unless station_name_sym.include?(station_code)
+      @error = "これは千代田線の駅ではありません。別の駅を入力してください"
+    end
+    # 到着駅を綾瀬に固定してリクエストを投げる
+    res1 = Net::HTTP.get(URI.parse("http://api.ekispert.jp/v1/json/search/course/light?key=#{ENV['ACCESS_KEY']}&from=#{station_code[@station_name.to_sym]}&to=22499"))
+    #叩いて返ってきたJSONをhashに格納
+    hash = JSON.parse(res1)
+    url = hash["ResultSet"]["ResourceURI"]
+    #返ってくるresのurlからスクレイピングして必要な部分のhtmlを抜き出して時間を出力
+    charset = nil
+    html = URI.open(url) do |f|
+    charset = f.charset
+      f.read
+    end
+    # スクレイピングして取ってきたテキストをxに格納
+    doc = Nokogiri::HTML.parse(html, nil, charset)
+    doc.xpath('/html/body/div[1]/div[4]/div/div[1]/div[2]/div/table/tr[1]/td[3]/p[1]').each do |node|
+    $time = node.inner_text
+    end
+    reply_message
     case event
     when Line::Bot::Event::Message
-      case event.type
-      when Line::Bot::Event::MessageType::Text
-        # userから送られてくるテキストを変数に格納
-        @station_name = event.message["text"]
-        station_name_sym = @station_name.to_sym
-        # 到着駅を綾瀬に固定してリクエストを投げる
-        res1 = Net::HTTP.get(URI.parse("http://api.ekispert.jp/v1/json/search/course/light?key=#{ENV['ACCESS_KEY']}&from=#{station_code[@station_name.to_sym]}&to=22499"))
-
-        #叩いて返ってきたJSONをhashに格納
-        hash = JSON.parse(res1)
-        url = hash["ResultSet"]["ResourceURI"]
-
-        #返ってくるresのurlからスクレイピングして必要な部分のhtmlを抜き出して時間を出力
-        charset = nil
-        html = URI.open(url) do |f|
-        charset = f.charset
-          f.read
-        end
-
-        # スクレイピングして取ってきたテキストをxに格納
-        doc = Nokogiri::HTML.parse(html, nil, charset)
-        doc.xpath('/html/body/div[1]/div[4]/div/div[1]/div[2]/div/table/tr[1]/td[3]/p[1]').each do |node|
-        $time = node.inner_text
-        end
-
-        if station_code.include?(station_name_sym)
-          message = {type: 'text',text: "次の綾瀬行の電車は#{$time}です"}
-          client.reply_message(event['replyToken'], message)
-        else
-          message1 = {type: 'text',text: "これは千代田線の駅ではありません。別の駅を入力してください"}
-          client.reply_message(event['replyToken'], message1)
-        end
-      end
+    case event.type
+    when Line::Bot::Event::MessageType::Text
+      message = {type: 'text',text: response}
+      client.reply_message(event['replyToken'], message)
     end
+    end
+  # Don't forget to return a successful response
   "OK"
   end
 end
+
+def reply_message
+  if station_code.include?(station_name_sym)
+    response = "次の綾瀬行の電車は#{$time}です"
+  else
+    response = "これは千代田線の駅ではありません。別の駅を入力してください"
+  end
+end
+
+# 毎回実行したい処理だけブロックの中に記述
+def post
+  post '/callback' do
+    test
+    test2
+  end
+end
+
