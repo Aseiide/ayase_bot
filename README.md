@@ -6,7 +6,7 @@
 ![demo](https://user-images.githubusercontent.com/45246171/92308552-66ceec00-efd9-11ea-93bd-a757e122a5ac.gif)
 
 # 使用している技術
-- Ruby 2.6.3
+- Ruby 2.6.6
 - Messaging API
 - 駅すぱあとWebサービス（フリープラン）
 - Heroku
