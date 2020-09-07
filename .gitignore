@@ -1,3 +1,8 @@
 .env
 vendor/bundle/.DS_Store
 vendor/.DS_Store
+.idea/line_bot_lambda.iml
+.idea/misc.xml
+.idea/vcs.xml
+.idea/modules.xml
+.DS_Store/
