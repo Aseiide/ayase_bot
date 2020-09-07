@@ -34,6 +34,7 @@ https://github.com/Aseiide/ayase_bot
 bundle install
 ```
 # QRコード
-安定版として公開しています。
-以下QRコードをご利用ください。
 ![ayasebot](https://user-images.githubusercontent.com/45246171/92367721-c213f200-f131-11ea-8de9-26086b4d2938.png)
+
+安定版として公開しています。
+こちらのQRコードをご利用ください。
