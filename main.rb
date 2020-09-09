@@ -69,10 +69,11 @@ post '/callback' do
           end
           # スクレイピングして取ってきたテキストをxに格納
           doc = Nokogiri::HTML.parse(html, nil, charset)
+          time = nil
           doc.xpath('/html/body/div[1]/div[4]/div/div[1]/div[2]/div/table/tr[1]/td[3]/p[1]').each do |node|
-            $time = node.inner_text
+            time = node.inner_text
           end
-          message = {type: 'text',text: "次の綾瀬行の電車は#{$time}です"}
+          message = {type: 'text',text: "次の綾瀬行の電車は#{time}です"}
           client.reply_message(event['replyToken'], message)
       end
     end
