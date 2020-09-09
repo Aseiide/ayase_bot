@@ -1,3 +1,6 @@
 .env
-vendor/bundle/.DS_Store
-vendor/.DS_Store
+vendor/
+asset/
+.idea/
+product_explanation.md
+.DS_Store
