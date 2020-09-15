@@ -40,44 +40,70 @@ station_code = {
 
 # 毎回実行したい処理だけブロックの中に記述
 post '/callback' do
-  body = request.body.read
-
-  signature = request.env['HTTP_X_LINE_SIGNATURE']
-  unless client.validate_signature(body, signature)
-    error 400 do 'Bad Request' end
+  def signature
+    body = request.body.read
+    signature = request.env['HTTP_X_LINE_SIGNATURE']
+    unless client.validate_signature(body, signature)
+      error 400 do 'Bad Request' end
+    end
   end
-
   events = client.parse_events_from(body)
   events.each do |event|
     case event
     when Line::Bot::Event::Message
       case event.type
       when Line::Bot::Event::MessageType::Text
-          @station_name = event.message["text"]
-           # 到着駅を綾瀬に固定してリクエストを投げる
-          res1 = Net::HTTP.get(URI.parse("http://api.ekispert.jp/v1/json/search/course/light?key=#{ENV['ACCESS_KEY']}&from=#{station_code[@station_name.to_sym]}&to=22499"))
+          def request
+            @station_name = event.message["text"]
+            # 到着駅を綾瀬に固定してリクエストを投げる
+            res1 = Net::HTTP.get(URI.parse("http://api.ekispert.jp/v1/json/search/course/light?key=#{ENV['ACCESS_KEY']}&from=#{station_code[@station_name.to_sym]}&to=22499"))
 
-          #叩いて返ってきたJSONをhashに格納
-          hash = JSON.parse(res1)
-          url = hash["ResultSet"]["ResourceURI"]
-
-          #返ってくるresのurlからスクレイピングして必要な部分のhtmlを抜き出して時間を出力
-          charset = nil
-          html = URI.open(url) do |f|
-            charset = f.charset
-            f.read
+            #叩いて返ってきたJSONをhashに格納
+            hash = JSON.parse(res1)
+            url = hash["ResultSet"]["ResourceURI"]
           end
-          # スクレイピングして取ってきたテキストをxに格納
-          doc = Nokogiri::HTML.parse(html, nil, charset)
-          time = nil
-          doc.xpath('/html/body/div[1]/div[4]/div/div[1]/div[2]/div/table/tr[1]/td[3]/p[1]').each do |node|
-            time = node.inner_text
+          def scraping
+            #返ってくるresのurlからスクレイピングして必要な部分のhtmlを抜き出して時間を出力
+            charset = nil
+            html = URI.open(url) do |f|
+              charset = f.charset
+              f.read
+            end
+            # スクレイピングして取ってきたテキストをxに格納
+            doc = Nokogiri::HTML.parse(html, nil, charset)
+            time = nil
+            doc.xpath('/html/body/div[1]/div[4]/div/div[1]/div[2]/div/table/tr[1]/td[3]/p[1]').each do |node|
+              time = node.inner_text
+            end
           end
-          message = {type: 'text',text: "次の綾瀬行の電車は#{time}です"}
-          client.reply_message(event['replyToken'], message)
+          def replymessage
+            message = {type: 'text',text: "次の綾瀬行の電車は#{time}です"}
+            client.reply_message(event['replyToken'], message)
+          end
       end
     end
   # Don't forget to return a successful response
   "OK"
+  end
+end
+
+def post
+  post '/callback' do
+  # 変数のスコープに注意してメソッドを記入
+    signature
+    events = client.parse_events_from(body)
+    events.each do |event|
+      case event
+      when Line::Bot::Event::Message
+        case event.type
+        when Line::Bot::Event::MessageType::Text
+          request
+          scraping
+          replymessage
+        end
+      end
+    # Don't forget to return a successful response
+    "OK"
+    end
   end
 end
