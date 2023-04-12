@@ -3,13 +3,13 @@ GEM
   specs:
     dotenv (2.7.6)
     line-bot-api (1.14.1)
-    mini_portile2 (2.8.0)
+    mini_portile2 (2.8.1)
     mustermann (1.1.1)
       ruby2_keywords (~> 0.0.1)
-    nokogiri (1.13.6)
+    nokogiri (1.14.3)
       mini_portile2 (~> 2.8.0)
       racc (~> 1.4)
-    racc (1.6.0)
+    racc (1.6.2)
     rack (2.2.3)
     rack-protection (2.2.0)
       rack
